@@ -79,6 +79,16 @@ class ResourceViewModel<T> extends AsyncViewModel {
   bool _reloadPending = false;
   final Future<T> Function() loader;
   T? data;
+  Future<bool> mutate(Future<void> Function() action) async {
+    if (busy) return false;
+    final result = await run(action);
+    if (result) {
+      _reloadPending = false;
+      await load();
+    }
+    return result;
+  }
+
   Future<bool> load() async {
     if (busy) {
       _reloadPending = true;

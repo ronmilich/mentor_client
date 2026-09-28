@@ -75,16 +75,58 @@ class LevelsRepository {
     ),
   );
 
-  Future<LevelAttempt> start(String levelId, {String? restartAttemptId}) async {
+  static String localDate() {
     final now = DateTime.now();
-    final date =
-        '${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    return '${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+  }
+
+  Future<LevelAttemptItemResult> updateItemResult(
+    String levelId,
+    String attemptId,
+    String dayId,
+    String resultId,
+    String status,
+  ) => _write(
+    () async => LevelAttemptItemResult.fromJson(
+      await api.request(
+        'PATCH',
+        '/levels/$levelId/attempts/$attemptId/days/$dayId/items/$resultId',
+        body: {'status': status},
+      ),
+    ),
+  );
+
+  Future<LevelAttemptDay> finalizeDay(
+    String levelId,
+    String attemptId,
+    String dayId,
+  ) => _write(
+    () async => LevelAttemptDay.fromJson(
+      await api.request(
+        'POST',
+        '/levels/$levelId/attempts/$attemptId/days/$dayId/finalize',
+      ),
+    ),
+  );
+
+  Future<LevelAttemptDay> startNextDay(String levelId, String attemptId) =>
+      _write(
+        () async => LevelAttemptDay.fromJson(
+          await api.request(
+            'POST',
+            '/levels/$levelId/attempts/$attemptId/days',
+            body: {'date': localDate()},
+          ),
+        ),
+      );
+
+  Future<LevelAttempt> start(String levelId, {String? restartAttemptId}) async {
     return _write(
       () async => LevelAttempt.fromJson(
         await api.request(
           'POST',
           '/levels/$levelId/${restartAttemptId == null ? 'start' : 'restart'}',
-          body: {'date': date, 'attemptId': ?restartAttemptId},
+          body: {'date': localDate(), 'attemptId': ?restartAttemptId},
         ),
       ),
     );

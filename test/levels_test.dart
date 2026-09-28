@@ -175,7 +175,7 @@ void main() {
     fail = false;
     await tester.tap(find.text('Retry'));
     await tester.pumpAndSettle();
-    expect(find.text('Daily focus'), findsOneWidget);
+    expect(find.text('Not started'), findsOneWidget);
     expect(find.text('Temporarily unavailable'), findsNothing);
   });
 

@@ -118,9 +118,10 @@ class LevelsScreen extends StatelessWidget {
                     child: ListTile(
                       contentPadding: const EdgeInsets.all(16),
                       leading: CircleAvatar(child: Text('${level.number}')),
-                      title: Text(level.title),
+                      title: Text(statusLabel(level.status)),
                       subtitle: Text(
-                        '${level.requiredDays} days · ${level.maxFailedAttempts} allowed failed attempts',
+                        'Day ${level.currentDayNumber} / ${level.attemptRequiredDays}'
+                        ' · Attempt ${level.currentAttemptNumber} / ${level.maxFailedAttempts}',
                       ),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => open('/levels/${level.id}'),

@@ -42,6 +42,8 @@ Map<String, dynamic> dayJson() => {
   'itemResults': [
     {
       'id': 'result-1',
+      'dayId': dayId,
+      'levelItemId': '55555555-5555-4555-8555-555555555555',
       'titleSnapshot': 'Original requirement',
       'typeSnapshot': 'DO',
       'status': 'PENDING',

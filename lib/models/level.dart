@@ -60,6 +60,20 @@ class Level {
       items.where((item) => item.isActive).toList();
   LevelAttempt? get activeAttempt =>
       attempts.where((a) => a.status == 'IN_PROGRESS').firstOrNull;
+  LevelAttempt? get currentAttempt {
+    if (activeAttempt != null) return activeAttempt;
+    final sorted = [...attempts]
+      ..sort((a, b) {
+        final byDate = b.startedAt.compareTo(a.startedAt);
+        return byDate == 0 ? b.id.compareTo(a.id) : byDate;
+      });
+    return sorted.firstOrNull;
+  }
+
+  String get status => currentAttempt?.status ?? 'NOT_STARTED';
+  int get currentDayNumber => currentAttempt?.currentDayNumber ?? 0;
+  int get currentAttemptNumber => attempts.length;
+  int get attemptRequiredDays => currentAttempt?.requiredDays ?? requiredDays;
 }
 
 class LevelItem {
@@ -120,6 +134,16 @@ class LevelAttempt {
   final List<LevelAttemptDay> days;
   int get completedDays =>
       days.where((day) => day.status == 'COMPLETED').length;
+  LevelAttemptDay? get currentDay {
+    final sorted = [...days]
+      ..sort((a, b) => b.dayNumber.compareTo(a.dayNumber));
+    return sorted.firstOrNull;
+  }
+
+  int get currentDayNumber =>
+      currentDay?.dayNumber ??
+      failedOnDay ??
+      (status == 'COMPLETED' ? requiredDays : 0);
 }
 
 class LevelAttemptDay {
@@ -136,31 +160,42 @@ class LevelAttemptDay {
     date: json['date'],
     status: json['status'],
     itemResults: (json['itemResults'] as List? ?? [])
-        .map((e) => LevelItemResult.fromJson(e))
+        .map((e) => LevelAttemptItemResult.fromJson(e))
         .toList(),
   );
   final String id;
   final int dayNumber;
   final String date;
   final String status;
-  final List<LevelItemResult> itemResults;
+  final List<LevelAttemptItemResult> itemResults;
 }
 
-class LevelItemResult {
-  const LevelItemResult({
+class LevelAttemptItemResult {
+  const LevelAttemptItemResult({
     required this.id,
+    required this.dayId,
+    required this.levelItemId,
     required this.titleSnapshot,
     required this.typeSnapshot,
     required this.status,
+    this.evaluatedAt,
   });
-  factory LevelItemResult.fromJson(Json json) => LevelItemResult(
+  factory LevelAttemptItemResult.fromJson(Json json) => LevelAttemptItemResult(
     id: json['id'],
+    dayId: json['dayId'],
+    levelItemId: json['levelItemId'],
     titleSnapshot: json['titleSnapshot'],
     typeSnapshot: LevelItemType.parse(json['typeSnapshot']),
     status: json['status'],
+    evaluatedAt: json['evaluatedAt'] == null
+        ? null
+        : DateTime.parse(json['evaluatedAt']),
   );
   final String id;
+  final String dayId;
+  final String levelItemId;
   final String titleSnapshot;
   final LevelItemType typeSnapshot;
   final String status;
+  final DateTime? evaluatedAt;
 }

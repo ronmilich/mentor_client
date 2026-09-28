@@ -146,6 +146,7 @@ class EmptyMessage extends StatelessWidget {
 }
 
 String statusLabel(String value) => switch (value) {
+  'NOT_STARTED' => 'Not started',
   'IN_PROGRESS' => 'In progress',
   'COMPLETED' => 'Completed',
   'FAILED' => 'Failed',

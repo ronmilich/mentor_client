@@ -5,6 +5,7 @@ import '../../../data/repositories/levels_repository.dart';
 import '../../../models/level.dart';
 import '../view_models/levels_view_models.dart';
 import 'level_widgets.dart';
+import 'current_attempt_day.dart';
 
 class LevelDetailScreen extends StatelessWidget {
   const LevelDetailScreen({
@@ -87,6 +88,30 @@ class LevelDetailScreen extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 24),
+                    if (level.activeAttempt case final attempt?)
+                      CurrentAttemptDay(
+                        attempt: attempt,
+                        busy: model.busy,
+                        onUpdate: (result, status) => model.mutate(() async {
+                          await repository.updateItemResult(
+                            levelId,
+                            attempt.id,
+                            attempt.currentDay!.id,
+                            result.id,
+                            status,
+                          );
+                        }),
+                        onFinalize: () => model.mutate(() async {
+                          await repository.finalizeDay(
+                            levelId,
+                            attempt.id,
+                            attempt.currentDay!.id,
+                          );
+                        }),
+                        onNextDay: () => model.mutate(() async {
+                          await repository.startNextDay(levelId, attempt.id);
+                        }),
+                      ),
                     Text(
                       'Daily requirements',
                       style: Theme.of(context).textTheme.titleLarge,

@@ -6,6 +6,7 @@ import 'dart:math';
 
 import 'package:mentor_client/data/repositories/levels_repository.dart';
 import 'package:mentor_client/data/services/api_client.dart';
+import 'package:mentor_client/models/level.dart';
 
 void check(bool condition, String message) {
   if (!condition) throw StateError(message);
@@ -153,6 +154,134 @@ Future<void> main() async {
       () => api.request('DELETE', '/levels/${level.id}'),
       409,
       'attempt history prevents accidental level deletion',
+    );
+    final day = restarted.days.single;
+    final result = day.itemResults.single;
+    Future<LevelAttemptItemResult> update(String status) => repository
+        .updateItemResult(level.id, restarted.id, day.id, result.id, status);
+    await expectStatus(
+      () => repository.updateItemResult(
+        level.id,
+        original.id,
+        oldDay.id,
+        oldDay.itemResults.single.id,
+        'PASSED',
+      ),
+      409,
+      'abandoned attempts cannot be edited',
+    );
+    await expectStatus(
+      () => repository.updateItemResult(
+        level.id,
+        restarted.id,
+        day.id,
+        oldDay.itemResults.single.id,
+        'PASSED',
+      ),
+      404,
+      'results cannot be edited through a different day',
+    );
+    await expectStatus(
+      () => repository.finalizeDay(level.id, restarted.id, day.id),
+      400,
+      'pending items prevent finalization',
+    );
+    check(
+      (await update('FAILED')).evaluatedAt != null,
+      'failed result records evaluation time',
+    );
+    check(
+      (await repository.attempt(level.id, restarted.id)).status ==
+          'IN_PROGRESS',
+      'failed item does not automatically end the attempt',
+    );
+    await update('PASSED');
+    check(
+      (await update('PENDING')).evaluatedAt == null,
+      'resetting an item clears evaluation time',
+    );
+    await update('FAILED');
+    await repository.finalizeDay(level.id, restarted.id, day.id);
+    final failed = await repository.attempt(level.id, restarted.id);
+    check(
+      failed.status == 'FAILED' &&
+          failed.failedOnDay == 1 &&
+          failed.endedAt != null,
+      'explicit finalization closes a failed attempt',
+    );
+    await expectStatus(
+      () => update('PASSED'),
+      409,
+      'finalized results are read-only',
+    );
+    final summary = (await repository.levels(
+      userId,
+    )).firstWhere((entry) => entry.id == level.id);
+    check(
+      summary.status == 'FAILED' &&
+          summary.currentDayNumber == 1 &&
+          summary.currentAttemptNumber == 2,
+      'levels list contains current status and progress',
+    );
+
+    await repository.saveLevel(other.id, {'requiredDays': 2});
+    await repository.saveItem(other.id, null, {
+      'title': 'Two-day requirement',
+      'type': 'DO',
+      'sortOrder': 0,
+      'isActive': true,
+    });
+    final yesterday = DateTime.now().subtract(const Duration(days: 1));
+    final date =
+        '${yesterday.year.toString().padLeft(4, '0')}-${yesterday.month.toString().padLeft(2, '0')}-${yesterday.day.toString().padLeft(2, '0')}';
+    final successful = LevelAttempt.fromJson(
+      await api.request(
+        'POST',
+        '/levels/${other.id}/start',
+        body: {'date': date},
+      ),
+    );
+    final first = successful.days.single;
+    await repository.updateItemResult(
+      other.id,
+      successful.id,
+      first.id,
+      first.itemResults.single.id,
+      'PASSED',
+    );
+    await repository.finalizeDay(other.id, successful.id, first.id);
+    await expectStatus(
+      () => repository.updateItemResult(
+        other.id,
+        successful.id,
+        first.id,
+        first.itemResults.single.id,
+        'PENDING',
+      ),
+      409,
+      'completed days cannot be edited while the attempt continues',
+    );
+    final next = await repository.startNextDay(other.id, successful.id);
+    check(
+      next.dayNumber == 2 && next.itemResults.single.status == 'PENDING',
+      'next day starts with pending results',
+    );
+    await expectStatus(
+      () => repository.startNextDay(other.id, successful.id),
+      409,
+      'duplicate next days are rejected',
+    );
+    await repository.updateItemResult(
+      other.id,
+      successful.id,
+      next.id,
+      next.itemResults.single.id,
+      'PASSED',
+    );
+    await repository.finalizeDay(other.id, successful.id, next.id);
+    check(
+      (await repository.attempt(other.id, successful.id)).status == 'COMPLETED',
+      'final successful day completes the attempt',
     );
     stdout.writeln('All live backend checks passed.');
   } finally {
