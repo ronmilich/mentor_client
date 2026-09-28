@@ -153,7 +153,16 @@ String statusLabel(String value) => switch (value) {
   'ABANDONED' => 'Abandoned',
   'PENDING' => 'Pending',
   'PASSED' => 'Passed',
-  _ => value,
+  _ =>
+    value
+        .toLowerCase()
+        .split('_')
+        .map(
+          (word) => word.isEmpty
+              ? ''
+              : '${word[0].toUpperCase()}${word.substring(1)}',
+        )
+        .join(' '),
 };
 
 String displayDate(DateTime date) {
@@ -165,11 +174,48 @@ class StatusChip extends StatelessWidget {
   const StatusChip(this.status, {super.key});
   final String status;
   @override
-  Widget build(BuildContext context) => Chip(
-    label: Text(statusLabel(status)),
-    visualDensity: VisualDensity.compact,
-  );
+  Widget build(BuildContext context) {
+    final color = statusColor(status);
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Chip(
+      backgroundColor: color.withValues(alpha: dark ? .25 : .12),
+      labelStyle: TextStyle(
+        color: dark ? Color.lerp(color, Colors.white, .5) : color,
+        fontWeight: FontWeight.w700,
+      ),
+      avatar: Icon(
+        Icons.circle,
+        color: dark ? Color.lerp(color, Colors.white, .5) : color,
+        size: 8,
+      ),
+      side: BorderSide.none,
+      label: Text(statusLabel(status)),
+      visualDensity: VisualDensity.compact,
+    );
+  }
 }
+
+Color statusColor(String status) => switch (status) {
+  'IN_PROGRESS' => const Color(0xff245FCA),
+  'ACTIVE' => const Color(0xff087F8C),
+  'COMPLETED' => const Color(0xff217443),
+  'PASSED' || 'SUBMITTED_SUCCESS' => const Color(0xff167563),
+  'FAILED' || 'SUBMITTED_FAILURE' => const Color(0xffBC3045),
+  'NOT_STARTED' => const Color(0xff65758B),
+  'PENDING' => const Color(0xff9B6A06),
+  'CANCELLED' => const Color(0xffA54A23),
+  'ARCHIVED' => const Color(0xff665677),
+  'ABANDONED' => const Color(0xff956149),
+  'PAUSED' => const Color(0xff7647B8),
+  'DRAFT' => const Color(0xff536579),
+  'AUTO_COMPLETED' => const Color(0xff247B2C),
+  'AUTO_FAILED' => const Color(0xffA22B65),
+  'AUTO_FINALIZED' => const Color(0xff3B7890),
+  'OPEN' => const Color(0xff3974A4),
+  'OVERDUE' => const Color(0xffB33054),
+  'HIGH' => const Color(0xffA46112),
+  _ => const Color(0xff627082),
+};
 
 String? smallIntValidator(String? value, {int min = 1}) {
   final number = int.tryParse(value?.trim() ?? '');

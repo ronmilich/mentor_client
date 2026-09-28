@@ -6,6 +6,7 @@ import '../../../config/api_config.dart';
 import '../../../data/repositories/levels_repository.dart';
 import '../view_models/levels_view_models.dart';
 import 'level_widgets.dart';
+import '../../core/app_theme.dart';
 
 class LevelsScreen extends StatelessWidget {
   const LevelsScreen({super.key, required this.repository});
@@ -52,13 +53,11 @@ class LevelsScreen extends StatelessWidget {
             },
             child: ContentList(
               children: [
-                Text(
-                  'Build your next chapter',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Define what to do and what to avoid. Track each attempt, one day at a time.',
+                const FeatureBanner(
+                  title: 'Build your next chapter',
+                  subtitle:
+                      'Define what to do and what to avoid. Track each attempt, one day at a time.',
+                  icon: Icons.layers_outlined,
                 ),
                 const SizedBox(height: 24),
                 if (model.users.isNotEmpty)
@@ -118,7 +117,10 @@ class LevelsScreen extends StatelessWidget {
                     child: ListTile(
                       contentPadding: const EdgeInsets.all(16),
                       leading: CircleAvatar(child: Text('${level.number}')),
-                      title: Text(statusLabel(level.status)),
+                      title: Align(
+                        alignment: Alignment.centerLeft,
+                        child: StatusChip(level.status),
+                      ),
                       subtitle: Text(
                         'Day ${level.currentDayNumber} / ${level.attemptRequiredDays}'
                         ' · Attempt ${level.currentAttemptNumber} / ${level.maxFailedAttempts}',

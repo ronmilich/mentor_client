@@ -5,6 +5,8 @@ import 'routing/app_router.dart';
 import 'config/api_config.dart';
 import 'data/services/api_client.dart';
 import 'data/repositories/levels_repository.dart';
+import 'data/repositories/productivity_repository.dart';
+import 'ui/core/app_theme.dart';
 
 class MentorApp extends StatefulWidget {
   const MentorApp({super.key, this.levelsRepository});
@@ -20,11 +22,16 @@ class _MentorAppState extends State<MentorApp> {
       : null;
   late final LevelsRepository _repository =
       widget.levelsRepository ?? LevelsRepository(_api!);
-  late final GoRouter _router = createAppRouter(levelsRepository: _repository);
+  late final _productivity = ProductivityRepository(_repository.api);
+  late final GoRouter _router = createAppRouter(
+    levelsRepository: _repository,
+    productivityRepository: _productivity,
+  );
 
   @override
   void dispose() {
     _router.dispose();
+    _productivity.dispose();
     if (widget.levelsRepository == null) _repository.close();
     super.dispose();
   }
@@ -34,9 +41,8 @@ class _MentorAppState extends State<MentorApp> {
     return MaterialApp.router(
       title: 'Mentor',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
+      theme: mentorTheme(Brightness.light),
+      darkTheme: mentorTheme(Brightness.dark),
       routerConfig: _router,
     );
   }

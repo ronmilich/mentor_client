@@ -10,12 +10,16 @@ import '../ui/more/views/more_screen.dart';
 import '../ui/tasks/views/tasks_screen.dart';
 import '../ui/today/views/today_screen.dart';
 import '../data/repositories/levels_repository.dart';
+import '../data/repositories/productivity_repository.dart';
 import 'levels_routes.dart';
 
 GoRouter createAppRouter({
   String initialLocation = '/',
   required LevelsRepository levelsRepository,
+  ProductivityRepository? productivityRepository,
 }) {
+  final productivity =
+      productivityRepository ?? ProductivityRepository(levelsRepository.api);
   return GoRouter(
     initialLocation: initialLocation,
     routes: [
@@ -39,7 +43,7 @@ GoRouter createAppRouter({
                     path: tab.path,
                     name: tab.name,
                     builder: (context, state) =>
-                        _screenFor(tab, levelsRepository),
+                        _screenFor(tab, levelsRepository, productivity),
                   ),
               ],
             ),
@@ -49,10 +53,14 @@ GoRouter createAppRouter({
   );
 }
 
-Widget _screenFor(AppTab tab, LevelsRepository repository) => switch (tab) {
+Widget _screenFor(
+  AppTab tab,
+  LevelsRepository repository,
+  ProductivityRepository productivity,
+) => switch (tab) {
   AppTab.today => const TodayScreen(),
   AppTab.levels => LevelsScreen(repository: repository),
-  AppTab.tasks => const TasksScreen(),
-  AppTab.journal => const JournalScreen(),
+  AppTab.tasks => TasksScreen(repository: productivity),
+  AppTab.journal => JournalScreen(repository: productivity),
   AppTab.more => const MoreScreen(),
 };

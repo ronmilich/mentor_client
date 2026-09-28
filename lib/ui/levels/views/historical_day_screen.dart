@@ -65,6 +65,7 @@ class HistoricalDayScreen extends StatelessWidget {
                             _ => Icons.hourglass_empty,
                           }),
                           title: Text(result.titleSnapshot),
+                          trailing: StatusChip(result.status),
                           subtitle: Text(
                             '${result.typeSnapshot.label} · ${statusLabel(result.status)}',
                           ),

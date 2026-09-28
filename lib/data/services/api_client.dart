@@ -20,6 +20,7 @@ class ApiClient {
 
   final String _baseUrl;
   final http.Client _client;
+  String? accessToken;
 
   Future<dynamic> request(
     String method,
@@ -28,6 +29,9 @@ class ApiClient {
   }) async {
     final request = http.Request(method, Uri.parse('$_baseUrl$path'));
     request.headers['Accept'] = 'application/json';
+    if (accessToken != null) {
+      request.headers['Authorization'] = 'Bearer $accessToken';
+    }
     if (body != null) {
       request.headers['Content-Type'] = 'application/json';
       request.body = jsonEncode(body);

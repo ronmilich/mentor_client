@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:mentor_client/app.dart';
 import 'package:mentor_client/models/app_tab.dart';
 import 'package:mentor_client/routing/app_router.dart';
-import 'package:mentor_client/ui/core/section_placeholder.dart';
+import 'package:mentor_client/ui/tasks/views/tasks_screen.dart';
+import 'package:mentor_client/ui/journal/views/journal_screen.dart';
+import 'package:mentor_client/ui/more/views/more_screen.dart';
 import 'package:mentor_client/ui/main/views/main_screen.dart';
 import 'package:mentor_client/ui/today/views/today_screen.dart';
 import 'package:mentor_client/ui/levels/views/levels_screen.dart';
@@ -55,16 +57,16 @@ void main() {
         tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
         tab.index,
       );
-      if (tab == AppTab.levels) {
-        expect(find.byType(LevelsScreen), findsOneWidget);
-      } else {
-        expect(
-          tester
-              .widget<SectionPlaceholder>(find.byType(SectionPlaceholder))
-              .title,
-          tab.label,
-        );
-      }
+      expect(
+        find.byType(switch (tab) {
+          AppTab.today => TodayScreen,
+          AppTab.levels => LevelsScreen,
+          AppTab.tasks => TasksScreen,
+          AppTab.journal => JournalScreen,
+          AppTab.more => MoreScreen,
+        }),
+        findsOneWidget,
+      );
       expect(find.byType(NavigationBar), findsOneWidget);
       expect(tester.takeException(), isNull);
     }
@@ -90,16 +92,16 @@ void main() {
         tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
         tab.index,
       );
-      if (tab == AppTab.levels) {
-        expect(find.byType(LevelsScreen), findsOneWidget);
-      } else {
-        expect(
-          tester
-              .widget<SectionPlaceholder>(find.byType(SectionPlaceholder))
-              .title,
-          tab.label,
-        );
-      }
+      expect(
+        find.byType(switch (tab) {
+          AppTab.today => TodayScreen,
+          AppTab.levels => LevelsScreen,
+          AppTab.tasks => TasksScreen,
+          AppTab.journal => JournalScreen,
+          AppTab.more => MoreScreen,
+        }),
+        findsOneWidget,
+      );
       // Re-selecting the active destination keeps the current route.
       await tester.tap(find.byKey(ValueKey(tab)));
       await tester.pumpAndSettle();

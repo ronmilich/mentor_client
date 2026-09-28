@@ -82,7 +82,13 @@ class CurrentAttemptDay extends StatelessWidget {
                             ])
                               DropdownMenuItem(
                                 value: status,
-                                child: Text(statusLabel(status)),
+                                child: Text(
+                                  statusLabel(status),
+                                  style: TextStyle(
+                                    color: statusColor(status),
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
                               ),
                           ],
                           onChanged: busy
@@ -97,7 +103,10 @@ class CurrentAttemptDay extends StatelessWidget {
                       ),
                     )
                   else
-                    Text(statusLabel(result.status)),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: StatusChip(result.status),
+                    ),
                 ],
               ),
             ),

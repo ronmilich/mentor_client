@@ -113,7 +113,7 @@ class AttemptDetailScreen extends StatelessWidget {
                           subtitle: Text(
                             '${day.date} · ${statusLabel(day.status)}',
                           ),
-                          trailing: const Icon(Icons.chevron_right),
+                          trailing: StatusChip(day.status),
                           onTap: () => context.push(
                             '/levels/$levelId/attempts/$attemptId/days/${day.id}',
                           ),

@@ -59,7 +59,7 @@ class AttemptHistoryScreen extends StatelessWidget {
                     '${displayDate(attempt.startedAt)} · ${statusLabel(attempt.status)}\n${attempt.completedDays} / ${attempt.requiredDays} days completed',
                   ),
                   isThreeLine: true,
-                  trailing: const Icon(Icons.chevron_right),
+                  trailing: StatusChip(attempt.status),
                   onTap: () =>
                       context.push('/levels/$levelId/attempts/${attempt.id}'),
                 ),
